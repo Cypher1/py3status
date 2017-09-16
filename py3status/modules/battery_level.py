@@ -4,56 +4,56 @@ Display battery information.
 
 Configuration parameters:
     battery_id: id of the battery to be displayed
-        set to 'all' for combined display of all batteries
-        (default 0)
+    set to 'all' for combined display of all batteries
+    (default 0)
     blocks: a string, where each character represents battery level
-        especially useful when using icon fonts (e.g. FontAwesome)
-        (default "_▁▂▃▄▅▆▇█")
+    especially useful when using icon fonts (e.g. FontAwesome)
+    (default "_▁▂▃▄▅▆▇█")
     cache_timeout: a timeout to refresh the battery state
-        (default 30)
+    (default 30)
     charging_character: a character to represent charging battery
-        especially useful when using icon fonts (e.g. FontAwesome)
-        (default "⚡")
+    especially useful when using icon fonts (e.g. FontAwesome)
+    (default "⚡")
     format: string that formats the output. See placeholders below.
-        (default "{icon}")
+    (default "{icon}")
     format_notify_charging: format of the notification received when you click
-        on the module while your computer is plugged in
-        (default 'Charging ({percent}%)')
+    on the module while your computer is plugged in
+    (default 'Charging ({percent}%)')
     format_notify_discharging: format of the notification received when you
-        click on the module while your computer is not plugged in
-        (default "{time_remaining}")
+    click on the module while your computer is not plugged in
+    (default "{time_remaining}")
     hide_seconds: hide seconds in remaining time
-        (default False)
+    (default False)
     hide_when_full: hide any information when battery is fully charged (when
-        the battery level is greater than or equal to 'threshold_full')
-        (default False)
+    the battery level is greater than or equal to 'threshold_full')
+    (default False)
     measurement_mode: either 'acpi' or 'sys', or None to autodetect. 'sys'
-        should be more robust and does not have any extra requirements, however
-        the time measurement may not work in some cases
-        (default None)
+    should be more robust and does not have any extra requirements, however
+    the time measurement may not work in some cases
+    (default None)
     notification: show current battery state as notification on click
-        (default False)
+    (default False)
     notify_low_level: display notification when battery is running low (when
-        the battery level is less than 'threshold_degraded')
-        (default False)
+    the battery level is less than 'threshold_degraded')
+    (default False)
     sys_battery_path: set the path to your battery(ies), without including its
-        number
-        (default "/sys/class/power_supply/")
+    number
+    (default "/sys/class/power_supply/")
     threshold_bad: a percentage below which the battery level should be
-        considered bad
-        (default 10)
+    considered bad
+    (default 10)
     threshold_degraded: a percentage below which the battery level should be
-        considered degraded
-        (default 30)
+    considered degraded
+    (default 30)
     threshold_full: a percentage at or above which the battery level should
-        should be considered full
-        (default 100)
+    should be considered full
+    (default 100)
 
 Format placeholders:
     {ascii_bar} - a string of ascii characters representing the battery level,
-        an alternative visualization to '{icon}' option
+    an alternative visualization to '{icon}' option
     {icon} - a character representing the battery level,
-        as defined by the 'blocks' and 'charging_character' parameters
+    as defined by the 'blocks' and 'charging_character' parameters
     {percent} - the remaining battery percentage (previously '{}')
     {time_remaining} - the remaining time until the battery is empty
 
@@ -65,7 +65,7 @@ Color options:
 
 Requires:
     - the `acpi` the acpi command line utility (only if
-        `measurement_mode='acpi'`)
+    `measurement_mode='acpi'`)
 
 @author shadowprince, AdamBSteele, maximbaz, 4iar, m45t3r
 @license Eclipse Public License
@@ -200,11 +200,10 @@ class Py3status:
         else:
             format = self.format_notify_discharging
 
-        message = self.py3.safe_format(format,
-                                       dict(ascii_bar=self.ascii_bar,
-                                            icon=self.icon,
-                                            percent=self.percent_charged,
-                                            time_remaining=self.time_remaining))
+        message = format.format(ascii_bar=self.ascii_bar,
+                                icon=self.icon,
+                                percent=self.percent_charged,
+                                time_remaining=self.time_remaining)
 
         if message:
             self.py3.notify_user(message, 'info')
@@ -275,7 +274,7 @@ class Py3status:
                         raw_values[k] = int(v)
                     except ValueError:
                         raw_values[k] = v
-            return raw_values
+                        return raw_values
 
         battery_list = []
         for path in iglob(os.path.join(self.sys_battery_path, "BAT*")):
@@ -296,13 +295,13 @@ class Py3status:
                                     present_rate * 3600)
                 else:
                     time_in_secs = (remaining_energy / present_rate * 3600)
-                battery["time_remaining"] = self._seconds_to_hms(time_in_secs)
+                    battery["time_remaining"] = self._seconds_to_hms(time_in_secs)
             except ZeroDivisionError:
                 # Battery is either full charged or is not discharging
                 battery["time_remaining"] = FULLY_CHARGED
 
             battery_list.append(battery)
-        return battery_list
+            return battery_list
 
     def _hms_to_seconds(self, t):
         h, m, s = [int(i) for i in t.split(':')]
@@ -344,8 +343,8 @@ class Py3status:
             inactive_battery = battery_list[:]
             for battery_id in range(0, len(battery_list)):
                 if (battery_list[battery_id]["time_remaining"] and
-                        battery_list[battery_id]["time_remaining"] !=
-                        FULLY_CHARGED):
+                    battery_list[battery_id]["time_remaining"] !=
+                    FULLY_CHARGED):
                     active_battery = battery_list[battery_id]
                     del inactive_battery[battery_id]
 
@@ -364,8 +363,8 @@ class Py3status:
                         active_battery["capacity"] *
                         (active_battery["percent_charged"] / 100))
                     time_remaining_seconds += inactive_battery["capacity"] * \
-                        inactive_battery["percent_charged"] / 100 * \
-                        rate_second_per_mah
+                            inactive_battery["percent_charged"] / 100 * \
+                            rate_second_per_mah
                 except ZeroDivisionError:
                     # Either active or inactive battery has 0% charge
                     time_remaining_seconds = 0
@@ -420,7 +419,7 @@ class Py3status:
 
     def _set_bar_text(self):
         self.response['full_text'] = '' if self.hide_when_full and \
-            self.percent_charged >= self.threshold_full else self.full_text
+                self.percent_charged >= self.threshold_full else self.full_text
 
     def _set_bar_color(self):
         notify_msg = None
@@ -444,7 +443,7 @@ class Py3status:
             battery_status = 'good'
 
         if (notify_msg and self.notify_low_level and
-                self.last_known_status != battery_status):
+            self.last_known_status != battery_status):
             self.py3.notify_user(notify_msg['msg'].format(self.percent_charged),
                                  notify_msg['level'])
 
